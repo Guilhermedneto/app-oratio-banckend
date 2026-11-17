@@ -1,0 +1,5 @@
+{"readings": {
+  "first_reading": {"head": "Is 1,1", "title": "Primeira", "text": "texto"},
+  "psalm": {"response": "R. Senhor", "content_psalm": ["v1", "v2"]},
+  "gospel": {"head": "Mt 1,1", "text": "ev"}
+}}

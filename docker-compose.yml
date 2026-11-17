@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: oratio
+      POSTGRES_PASSWORD: oratio
+      POSTGRES_DB: oratio
+    ports:
+      - "5433:5432"
+    volumes:
+      - oratio_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oratio"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+volumes:
+  oratio_pg:

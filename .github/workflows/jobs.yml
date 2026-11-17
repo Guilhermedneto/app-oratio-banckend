@@ -1,0 +1,49 @@
+name: Jobs agendados
+# Substitui os Cron Jobs do Render (pagos). Segredos necessários em Settings > Secrets and variables > Actions:
+#   DATABASE_URL (a mesma do Neon), LITURGY_SOURCES (opcional), VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
+# Variável (não segredo): API_URL, ex.: https://oratio-api.onrender.com (para o ping que acorda a API).
+on:
+  schedule:
+    - cron: "0 8 * * *"      # 05:00 em Brasília: pré-carrega 14 dias de liturgia
+    - cron: "*/15 * * * *"   # lembretes de oração (Web Push)
+    - cron: "*/10 * * * *"   # ping em /health, para a API do plano gratuito não hibernar
+  workflow_dispatch:
+
+jobs:
+  prefetch:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 8 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install .
+      - run: python -m app.jobs.prefetch 14
+        env:
+          ENV: prod
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          LITURGY_SOURCES: ${{ secrets.LITURGY_SOURCES || 'railway' }}
+
+  push:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '*/15 * * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install .
+      - run: python -m app.jobs.send_push
+        env:
+          ENV: prod
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+
+  keepalive:
+    if: github.event.schedule == '*/10 * * * *' && vars.API_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS --max-time 60 "${{ vars.API_URL }}/health" || true

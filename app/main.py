@@ -6,7 +6,7 @@ from sqlalchemy import text
 
 from app.core.config import get_settings
 from app.core.db import SessionLocal
-from app.routers import auth, comunidade, conteudos, gestor, liturgia, usuario
+from app.routers import auth, comunidade, conteudos, gestor, liturgia, presenca, usuario
 
 
 def create_app() -> FastAPI:
@@ -52,6 +52,7 @@ def create_app() -> FastAPI:
     app.include_router(conteudos.router)
     app.include_router(gestor.router)
     app.include_router(comunidade.router)
+    app.include_router(presenca.router)
     return app
 
 

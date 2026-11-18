@@ -256,3 +256,7 @@ class NewRequestsOut(BaseModel):
     count: int
     latest_id: uuid.UUID | None
     latest_text: str | None
+
+
+class PresenceOut(BaseModel):
+    online: int

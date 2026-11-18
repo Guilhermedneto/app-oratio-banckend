@@ -9,7 +9,7 @@ from app.routers.deps import Session
 from app.schemas.api import CategoryOut, ContentOut
 
 router = APIRouter(tags=["conteudos"])
-CACHE = "public, max-age=60, stale-while-revalidate=3600"
+CACHE = "no-cache"  # sempre revalida (ETag -> 304): o gestor vê o novo conteúdo na hora
 
 
 def _respond(request: Request, payload: object) -> Response:
